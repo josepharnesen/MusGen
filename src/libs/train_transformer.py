@@ -31,35 +31,35 @@ def run_epoch(data_iter, model, loss_compute, print_every):#, bad_idxs):
         #out, w2 = model.forward(batch.src, batch.trg, 
         #                    batch.src_mask, batch.trg_mask)
         #print('ITERATION: ', _)
-        try:
-            batch = batch.cuda()
-            batch = batch.long()
-            batch = batch.squeeze(0)
-            PAD = 0
-            trg = batch[:,:-1]
-            trg_y = batch[:, 1:]
-            src_mask = (batch != PAD).unsqueeze(-2)
-            trg_mask = (trg != PAD).unsqueeze(-2)
-            trg_mask = trg_mask & Variable(subsequent_mask(trg.size(-1)).type_as(trg_mask.data))
-            ntokens = (trg_y != PAD).data.sum()
-            
-            out, w2 = model.forward(batch, trg, src_mask, trg_mask)
-            #print("HEREEE")
-            loss = loss_compute(out, trg_y, ntokens.item())
-
-            total_loss += loss
-            total_tokens += ntokens
-            tokens += ntokens
-            if i % print_every == 1:
-                collection_of_losses.append(torch.div(loss,ntokens).cpu())
-                elapsed = time.time() - start
-                print("\tepoch Step: %d/%d Loss: %f Tokens per Sec: %f" %
-                        (i, len(data_iter), torch.div(loss,ntokens), tokens / elapsed))
-                start = time.time()
-                tokens = 0
-        except:
-            continue
+        #try:
+        batch = batch.cuda()
+        batch = batch.long()
+        batch = batch.squeeze(0)
+        PAD = 0
+        trg = batch[:,:-1]
+        trg_y = batch[:, 1:]
+        src_mask = (batch != PAD).unsqueeze(-2)
+        trg_mask = (trg != PAD).unsqueeze(-2)
+        trg_mask = trg_mask & Variable(subsequent_mask(trg.size(-1)).type_as(trg_mask.data))
+        ntokens = (trg_y != PAD).data.sum()
         
+        out, w2 = model.forward(batch, trg, src_mask, trg_mask)
+        #print("HEREEE")
+        loss = loss_compute(out, trg_y, ntokens.item())
+
+        total_loss += loss
+        # total_tokens += ntokens
+        tokens += ntokens
+        if i % print_every == 1:
+            collection_of_losses.append(torch.div(loss,ntokens).cpu())
+            elapsed = time.time() - start
+            print("\tepoch Step: %d/%d Loss: %f Tokens per Sec: %f" %
+                    (i, len(data_iter), torch.div(loss,ntokens), tokens / elapsed))
+            start = time.time()
+            tokens = 0
+        #except:
+        #    continue
+        total_tokens += ntokens
         i += 1
     return (total_loss / total_tokens), collection_of_losses
 
@@ -94,8 +94,8 @@ if __name__ == "__main__":
     arg_parser.add_argument("--d_model", help="The dimention of the model. Default=128", default=128, type=int)
     arg_parser.add_argument("--num_layers", help="The number of layers within the Transformer. Default=2", default=2, type=int)
     arg_parser.add_argument("--trainer", help="The name of the person who trained the model. Default=MusGen", default="MusGen")
-    arg_parser.add_argument("--lr", help="The learning rate to be used in training. Default=0.6", default=0.6)
-    arg_parser.add_argument("--print_every", help="The epoch step number that when reached, prints training details out to console. Default=200", default=200)
+    arg_parser.add_argument("--lr", help="The learning rate to be used in training. Default=0.6", default=0.6, type=float)
+    arg_parser.add_argument("--print_every", help="The epoch step number that when reached, prints training details out to console. Default=200", default=200, type=int)
 
     args = arg_parser.parse_args()
 
